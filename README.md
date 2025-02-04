@@ -1,3 +1,12 @@
+# winres-cl
+
+## Improvements
+
+ - merged `linking-flags` branch ([mxre/winres#41])
+ - honour TARGET_RC when building with toolkit msvc
+
+[mxre/winres#41]: https://github.com/mxre/winres/pull/41
+
 # winres
 
 A simple library to facilitate adding metainformation and icons to windows

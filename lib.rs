@@ -204,6 +204,27 @@ impl WindowsResource {
             PathBuf::from("/")
         };
 
+        let windres_path = {
+            #[cfg(windows)]
+            let exe = ".exe";
+            #[cfg(unix)]
+            let exe = "";
+            let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap_or_default();
+            let (suffix, default_bin) = match target_env.as_str() {
+                "gnu" => (Some("gnu"), "windres"),
+                "msvc" => (Some("msvc"), "rc"),
+                _ => (None, "windres"),
+            };
+            suffix
+                .and_then(|s| {
+                    let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap_or_default();
+                    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+                    let var = format!("WINDRES_{target_arch}_pc_{target_os}_{s}");
+                    env::var(var).ok()
+                })
+                .unwrap_or_else(|| format!("{default_bin}{exe}"))
+        };
+
         WindowsResource {
             toolkit_path: sdk,
             properties: props,
@@ -215,10 +236,7 @@ impl WindowsResource {
             manifest_file: None,
             output_directory: env::var("OUT_DIR").unwrap_or_else(|_| ".".to_string()),
 
-            #[cfg(windows)]
-            windres_path: "windres.exe".to_string(),
-            #[cfg(unix)]
-            windres_path: "windres".to_string(),
+            windres_path,
 
             #[cfg(windows)]
             ar_path: "ar.exe".to_string(),
